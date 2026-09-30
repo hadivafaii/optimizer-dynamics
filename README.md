@@ -8,22 +8,22 @@ landscapes. Saved examples play immediately, with controls for playback, 2D/3D,
 and optimizer visibility. The same renderer supports compact blog embeds.
 
 All trajectories are computed by the actual Python/PyTorch implementations in
-[massive-lion](https://github.com/hadivafaii/massive-lion/tree/codex/hosted-dynamics-lab).
+[massive-lion](https://github.com/hadivafaii/massive-lion/tree/main).
 This repository contains deployment configuration and frozen published figures;
 it does not maintain a second implementation of the optimizers.
 
-## Enable custom runs
+## Custom runs
 
-The public site starts with instant saved examples. To enable arbitrary new
-settings, deploy the prepared free Python backend:
+Saved examples play immediately. Custom settings run through the free
+[Python backend](https://optimizer-dynamics-api.onrender.com/api/health), which
+uses the optimizer code on `massive-lion/main`. Free servers can take about a
+minute to wake; saved figures keep working while the server is asleep.
 
-[Deploy the free backend to Render](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2Fhadivafaii%2Fmassive-lion%2Ftree%2Fcodex%2Fhosted-dynamics-lab)
+To deploy your own copy, [deploy the free backend to Render](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2Fhadivafaii%2Fmassive-lion%2Ftree%2Fmain).
 
-Sign up, review the **Free** plan, and deploy. Send the resulting service URL
-back to Codex to finish connecting it, or set repository Actions variable
+Review the **Free** plan and deploy. Set repository Actions variable
 `DYNAMICS_API_URL` to the `https://…onrender.com` origin and rerun **Publish
-playground**. No `/api` suffix is needed. Free servers can take about a minute
-to wake; saved figures keep working while the server is asleep.
+playground**. No `/api` suffix is needed.
 
 ## Publish a blog figure
 
@@ -35,7 +35,8 @@ scene picker and is available at `?embed=1&scene=article-valley-v1`.
 
 Keep published ids and files unchanged. Use a new id for a revised figure.
 Each bundle records configuration and source provenance. Built-in demos are
-generated from the source revision pinned in `.github/workflows/pages.yml`;
-change that revision deliberately when updating the application.
+generated from `massive-lion/main`. After source updates, deploy the latest
+commit in Render and run **Publish playground** here to refresh the application.
+Each build records the exact source commit in its provenance.
 
-[Full hosting and local preview guide](https://github.com/hadivafaii/massive-lion/blob/codex/hosted-dynamics-lab/docs/dynamics_lab_hosting.md)
+[Full hosting and local preview guide](https://github.com/hadivafaii/massive-lion/blob/main/docs/dynamics_lab_hosting.md)

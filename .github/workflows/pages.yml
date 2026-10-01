@@ -3,28 +3,53 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      source_ref:
+        description: 'massive-lion commit or branch already deployed to Render'
+        default: main
+        type: string
 permissions:
   contents: read
-  pages: write
-  id-token: write
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with:
           repository: hadivafaii/massive-lion
-          ref: main
+          ref: ${{ inputs.source_ref || 'main' }}
           path: source
+          persist-credentials: false
+      - name: Record the exact source revision
+        id: source
+        working-directory: source
+        run: echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: python -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
       - run: python -m pip install -r source/requirements-web.txt
+      - run: python -m pip install pytest httpx
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check simulation and browser regressions
+        working-directory: source
+        run: |
+          python -m pytest tests/test_dynamics_lab.py tests/test_dynamics_instances.py tests/test_dynamics_http.py tests/test_dynamics_web.py tests/test_dynamics_web_build.py tests/test_dynamics_deployment.py -q
+          npm ci --ignore-scripts
+          npm test
+      - name: Verify the matching live Python backend
+        working-directory: source
+        env:
+          API_URL: ${{ vars.DYNAMICS_API_URL }}
+          SOURCE_SHA: ${{ steps.source.outputs.commit }}
+        run: python -m dynamics_lab.check_deployment --api-url "$API_URL" --expected-revision "$SOURCE_SHA"
       - name: Generate the playground with the repo's optimizers
         working-directory: source
         env:
@@ -32,17 +57,21 @@ jobs:
           OMP_NUM_THREADS: '1'
           MKL_NUM_THREADS: '1'
         run: python -m dynamics_lab.build_web --output dist/dynamics-lab --api-url "$API_URL" --published ../published
-      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: source/dist/dynamics-lab
   deploy:
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build
     steps:
+      - uses: actions/configure-pages@v5
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

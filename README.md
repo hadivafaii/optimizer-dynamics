@@ -35,8 +35,11 @@ scene picker and is available at `?embed=1&scene=article-valley-v1`.
 
 Keep published ids and files unchanged. Use a new id for a revised figure.
 Each bundle records configuration and source provenance. Built-in demos are
-generated from `massive-lion/main`. After source updates, deploy the latest
-commit in Render and run **Publish playground** here to refresh the application.
+generated from `massive-lion/main`. After source updates, wait for its checks,
+deploy that commit in Render and run **Publish playground** here with that same
+commit as `source_ref`. Publication checks backend/source agreement, CORS, a real
+simulation, and Python/browser regressions before replacing the live site.
+For ordinary pushes here, the backend must already serve the current source `main`.
 Each build records the exact source commit in its provenance.
 
 [Full hosting and local preview guide](https://github.com/hadivafaii/massive-lion/blob/main/docs/dynamics_lab_hosting.md)
